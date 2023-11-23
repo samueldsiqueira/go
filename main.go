@@ -1,5 +1,14 @@
 package main
 
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/samueldsiqueira/go-initial-learn/internal/infra/database"
+	"github.com/samueldsiqueira/go-initial-learn/internal/usecase"
+)
+
 type Car struct {
 	Model string
 	Color string
@@ -20,13 +29,34 @@ func soma(x, y int) int {
 	return x + y
 }
 
+// func main() {
+// 	car := Car{ //declarando e atribuindo uma variavel
+// 		Model: "Ferrari",
+// 		Color: "Red",
+// 	}
+// 	car.Start()
+// 	car.ChangeColor("Blue")
+// 	println(car.Color)
+// 	// println(car.Model)
+// }
+
 func main() {
-	car := Car{ //declarando e atribuindo uma variavel
-		Model: "Ferrari",
-		Color: "Red",
+	db, err := sql.Open("sqlite3", "db.sqlite3")
+	if err != nil {
+		panic(err)
 	}
-	car.Start()
-	car.ChangeColor("Blue")
-	println(car.Color)
-	// println(car.Model)
+	orderRepository := database.NewOrderRepository(db)
+
+	uc := usecase.NewCalculateFinalPrice(orderRepository)
+
+	input := usecase.OrderInput{
+		ID:    "1234",
+		Price: 10.0,
+		Tax:   1.0,
+	}
+	output, err := uc.Execute(input)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(output)
 }
